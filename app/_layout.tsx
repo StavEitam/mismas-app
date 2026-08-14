@@ -14,6 +14,7 @@ export default function RootLayout() {
       <Stack.Screen name="event" options={{ title: 'Event & Ticket' }} />
       <Stack.Screen name="check-in" options={{ title: 'Check-In' }} />
       <Stack.Screen name="reveal" options={{ title: 'Reveal' }} />
+      <Stack.Screen name="admin" options={{ title: 'Admin' }} />
     </Stack>
   );
 }

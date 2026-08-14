@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Screen } from '../components/Screen';
 import { Checkbox } from '../components/Checkbox';
 import { PrimaryButton } from '../components/PrimaryButton';
@@ -9,6 +9,7 @@ import {
   createTicket,
   getMyTicketForEvent,
   getUpcomingEvent,
+  ticketReferenceCode,
   type EventWithId,
   type TicketWithId,
 } from '../lib/firestore';
@@ -44,7 +45,8 @@ export default function EventScreen() {
   }, [user, load]);
 
   // Re-check ticket state whenever this screen regains focus (e.g. coming
-  // back from Check-In), so status stays current without a manual refresh.
+  // back from Check-In, or an admin approving/denying while the guest waits),
+  // so status stays current without a manual refresh.
   useFocusEffect(
     useCallback(() => {
       if (user) load();
@@ -62,10 +64,10 @@ export default function EventScreen() {
         userId: user.uid,
         eventId: event.id,
         purchaseStatus: 'paid',
+        approvalStatus: 'pending',
         consentAccepted: consentChecked,
         checkedIn: false,
         checkedInAt: null,
-        selfieUrl: null,
       });
     } catch {
       setError("Couldn't reserve your spot — give it another try.");
@@ -91,7 +93,41 @@ export default function EventScreen() {
     );
   }
 
-  if (ticket) {
+  if (ticket?.approvalStatus === 'denied') {
+    return (
+      <Screen>
+        <Text style={styles.title}>Not confirmed this time</Text>
+        <Text style={styles.eventName}>{event.name}</Text>
+        <Text style={styles.subtitle}>
+          {event.venue} · {formatDate(event.date)}
+        </Text>
+        <Text style={styles.ticketNote}>
+          Your spot wasn't confirmed — reach out to MISMAS directly if you think this is a
+          mistake or need help sorting out payment.
+        </Text>
+      </Screen>
+    );
+  }
+
+  if (ticket?.approvalStatus === 'pending') {
+    return (
+      <Screen>
+        <Text style={styles.title}>Reservation received 🎉</Text>
+        <Text style={styles.eventName}>{event.name}</Text>
+        <Text style={styles.subtitle}>
+          {event.venue} · {formatDate(event.date)}
+        </Text>
+        <Text style={styles.ticketNote}>
+          Send payment to <Text style={styles.paymentPhone}>{event.paymentPhone}</Text> via
+          Bit or PayBox — add{' '}
+          <Text style={styles.paymentPhone}>{ticketReferenceCode(ticket.id)}</Text> in the
+          payment note so we can match it to your spot. We'll confirm once it's received.
+        </Text>
+      </Screen>
+    );
+  }
+
+  if (ticket?.approvalStatus === 'approved') {
     return (
       <Screen>
         <Text style={styles.title}>You're in ✅</Text>
@@ -102,6 +138,7 @@ export default function EventScreen() {
         <Text style={styles.ticketNote}>
           Hold tight — your check-in PIN will be on a sign at the door the night of.
         </Text>
+        <PrimaryButton label="I'm at the door" onPress={() => router.push('/check-in')} />
       </Screen>
     );
   }
@@ -128,7 +165,8 @@ export default function EventScreen() {
         loading={purchasing}
       />
       <Text style={styles.paymentNote}>
-        Payment is coordinated directly with MISMAS (Bit/PayBox) — this reserves your spot.
+        Payment is coordinated directly with MISMAS (Bit/PayBox) — reserving sends your spot
+        for approval.
       </Text>
     </Screen>
   );
@@ -151,6 +189,7 @@ const styles = StyleSheet.create({
   eventName: { fontSize: 20, fontWeight: '700', color: '#fff' },
   subtitle: { fontSize: 14, color: '#c9b8e0' },
   ticketNote: { fontSize: 14, color: '#e6dcf2', marginTop: 8 },
+  paymentPhone: { fontWeight: '700', color: '#fff' },
   paymentNote: { fontSize: 12, color: '#8a7aa3', textAlign: 'center' },
   error: { color: '#ff8ba7', fontSize: 13 },
 });

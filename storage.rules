@@ -1,8 +1,8 @@
 rules_version = '2';
 
-// Phase 1 baseline: everything locked down by default.
-// Phase 4 opens this up for selfie uploads at selfies/{userId}/{ticketId}.jpg
-// per docs/superpowers/specs/2026-08-14-mismas-app-design.md Section 3 & 6.
+// Storage is unused in this MVP — the Selfie Check-in feature was dropped
+// to stay on Firebase's free Spark plan (Storage requires Blaze). Left
+// locked down as a safe default in case Storage is revisited later.
 service firebase.storage {
   match /b/{bucket}/o {
     match /{allPaths=**} {
