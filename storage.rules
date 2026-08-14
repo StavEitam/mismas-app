@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// Phase 1 baseline: everything locked down by default.
+// Phase 4 opens this up for selfie uploads at selfies/{userId}/{ticketId}.jpg
+// per docs/superpowers/specs/2026-08-14-mismas-app-design.md Section 3 & 6.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
