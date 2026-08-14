@@ -16,6 +16,7 @@ import {
   type EventWithId,
   type TicketWithId,
 } from '../lib/firestore';
+import { colors, radius, spacing, typography } from '../theme';
 
 type PendingTicket = TicketWithId & { guestName: string };
 
@@ -120,7 +121,7 @@ export default function AdminScreen() {
   if (authLoading || loading) {
     return (
       <Screen>
-        <ActivityIndicator color="#f2308c" />
+        <ActivityIndicator color={colors.brand} />
       </Screen>
     );
   }
@@ -185,6 +186,7 @@ export default function AdminScreen() {
               onPress={() => handleDeny(t.id)}
               loading={actioningId === t.id}
               disabled={actioningId !== null && actioningId !== t.id}
+              variant="outline"
             />
           </View>
         </View>
@@ -194,18 +196,23 @@ export default function AdminScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '800', color: '#fff' },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginTop: 12 },
-  subtitle: { fontSize: 13, color: '#c9b8e0' },
-  guestName: { fontSize: 15, fontWeight: '600', color: '#fff' },
+  title: { fontSize: 26, fontFamily: typography.display, color: colors.textPrimary },
+  sectionTitle: {
+    fontSize: 16,
+    fontFamily: typography.heading,
+    color: colors.textPrimary,
+    marginTop: spacing.sm,
+  },
+  subtitle: { fontSize: 13, fontFamily: typography.bodyRegular, color: colors.textSecondary },
+  guestName: { fontSize: 15, fontFamily: typography.heading, color: colors.textPrimary },
   pendingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#1e0f33',
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.sm + 4,
   },
   pendingInfo: { gap: 2 },
-  pendingActions: { flexDirection: 'row', gap: 8 },
+  pendingActions: { flexDirection: 'row', gap: spacing.sm },
 });

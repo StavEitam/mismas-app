@@ -5,6 +5,7 @@ import { Screen } from '../components/Screen';
 import { TextField } from '../components/TextField';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { registerWithEmail, signInWithEmail } from '../lib/auth';
+import { colors, spacing, typography } from '../theme';
 
 export default function RegisterScreen() {
   const [mode, setMode] = useState<'signup' | 'signin'>('signup');
@@ -43,7 +44,7 @@ export default function RegisterScreen() {
       </Text>
       <Text style={styles.subtitle}>
         {mode === 'signup'
-          ? 'Quick sign-up — no swiping, no profiles to perfect.'
+          ? 'Quick sign up, no swiping, no profiles to perfect.'
           : 'Sign back in to grab your ticket.'}
       </Text>
 
@@ -85,7 +86,7 @@ export default function RegisterScreen() {
         style={styles.switchMode}
         onPress={() => setMode(mode === 'signup' ? 'signin' : 'signup')}
       >
-        {mode === 'signup' ? 'Already have an account? Sign in' : "New here? Sign up"}
+        {mode === 'signup' ? 'Already have an account? Sign in' : 'New here? Sign up'}
       </Text>
     </Screen>
   );
@@ -93,17 +94,17 @@ export default function RegisterScreen() {
 
 function friendlyAuthError(e: unknown): string {
   const code = (e as { code?: string })?.code ?? '';
-  if (code.includes('email-already-in-use')) return 'That email is already registered — try signing in instead.';
+  if (code.includes('email-already-in-use')) return "That email's already registered, try signing in instead.";
   if (code.includes('invalid-email')) return "That doesn't look like a valid email.";
   if (code.includes('weak-password')) return 'Password needs to be at least 6 characters.';
   if (code.includes('wrong-password') || code.includes('invalid-credential')) return "That password doesn't match.";
-  if (code.includes('user-not-found')) return "We couldn't find that account — check your email or sign up.";
-  return 'Something went wrong — give it another try.';
+  if (code.includes('user-not-found')) return "Couldn't find that account, check your email or sign up.";
+  return 'Something went wrong, give it another try.';
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '800', color: '#fff' },
-  subtitle: { fontSize: 14, color: '#c9b8e0', marginBottom: 8 },
-  error: { color: '#ff8ba7', fontSize: 13 },
-  switchMode: { color: '#f2308c', textAlign: 'center', marginTop: 8, fontSize: 14 },
+  title: { fontSize: 26, fontFamily: typography.display, color: colors.textPrimary },
+  subtitle: { fontSize: 14, fontFamily: typography.bodyRegular, color: colors.textSecondary, marginBottom: spacing.xs },
+  error: { color: colors.error, fontSize: 13, fontFamily: typography.bodyRegular },
+  switchMode: { color: colors.brand, textAlign: 'center', marginTop: spacing.xs, fontSize: 14, fontFamily: typography.body },
 });

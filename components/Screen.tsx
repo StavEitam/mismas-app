@@ -1,10 +1,9 @@
 import { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { colors, spacing } from '../theme';
 
 /**
  * Shared page wrapper: scrollable, keyboard-safe, consistent padding/background.
- * Real MISMAS theming (colors/type/motion) arrives in Phase 5 — this is just
- * the structural shell so Phase 3/4 screens don't each reinvent it.
  */
 export function Screen({ children }: { children: ReactNode }) {
   return (
@@ -20,10 +19,10 @@ export function Screen({ children }: { children: ReactNode }) {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
+  flex: { flex: 1, backgroundColor: colors.background },
   content: {
     flexGrow: 1,
-    padding: 24,
-    gap: 16,
+    padding: spacing.lg,
+    gap: spacing.md,
   },
 });

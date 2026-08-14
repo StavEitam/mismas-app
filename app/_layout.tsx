@@ -1,12 +1,43 @@
+import { useCallback, useEffect } from 'react';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_700Bold,
+  Poppins_800ExtraBold,
+} from '@expo-google-fonts/poppins';
+import { colors } from '../theme';
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_700Bold,
+    Poppins_800ExtraBold,
+  });
+
+  const onLayout = useCallback(async () => {
+    if (fontsLoaded) await SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    onLayout();
+  }, [onLayout]);
+
+  if (!fontsLoaded) return null;
+
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: '#12071f' },
-        headerTintColor: '#fff',
-        contentStyle: { backgroundColor: '#12071f' },
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.textPrimary,
+        headerTitleStyle: { fontFamily: 'Poppins_700Bold' },
+        contentStyle: { backgroundColor: colors.background },
+        animation: 'fade',
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />

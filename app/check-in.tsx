@@ -6,6 +6,7 @@ import { TextField } from '../components/TextField';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { useAuthUser } from '../hooks/useAuthUser';
 import { getEvent, getMyLatestTicket, setCheckedIn, type TicketWithId } from '../lib/firestore';
+import { colors, typography } from '../theme';
 
 type Step = 'loading' | 'no-ticket' | 'not-approved' | 'denied' | 'pin' | 'done';
 
@@ -50,10 +51,10 @@ export default function CheckInScreen() {
         await setCheckedIn(ticket.id);
         setStep('done');
       } else {
-        setPinError("That code doesn't match — check the sign and try again.");
+        setPinError("That code doesn't match, check the sign and try again.");
       }
     } catch {
-      setPinError('Something went wrong — give it another try.');
+      setPinError('Something went wrong, give it another try.');
     } finally {
       setSubmitting(false);
     }
@@ -62,7 +63,7 @@ export default function CheckInScreen() {
   if (authLoading || step === 'loading') {
     return (
       <Screen>
-        <ActivityIndicator color="#f2308c" />
+        <ActivityIndicator color={colors.brand} />
       </Screen>
     );
   }
@@ -81,7 +82,7 @@ export default function CheckInScreen() {
       <Screen>
         <Text style={styles.title}>Almost there</Text>
         <Text style={styles.subtitle}>
-          Your spot is still pending confirmation — check the Event screen for payment details.
+          Your spot is still pending confirmation. Check the Event screen for payment details.
         </Text>
       </Screen>
     );
@@ -127,7 +128,7 @@ export default function CheckInScreen() {
     <Screen>
       <Text style={styles.title}>You're all set 🎉</Text>
       <Text style={styles.subtitle}>
-        Have a great night — everyone's revealed once the night wraps.
+        Have a great night, everyone's revealed once the party wraps.
       </Text>
       <PrimaryButton label="Check the reveal" onPress={() => router.push('/reveal')} />
     </Screen>
@@ -135,8 +136,14 @@ export default function CheckInScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '800', color: '#fff' },
-  subtitle: { fontSize: 14, color: '#c9b8e0' },
-  error: { color: '#ff8ba7', fontSize: 13 },
-  pinInput: { textAlign: 'center', fontSize: 28, letterSpacing: 8 },
+  title: { fontSize: 26, fontFamily: typography.display, color: colors.textPrimary },
+  subtitle: { fontSize: 14, fontFamily: typography.bodyRegular, color: colors.textSecondary },
+  error: { color: colors.error, fontSize: 13, fontFamily: typography.bodyRegular },
+  pinInput: {
+    textAlign: 'center',
+    fontSize: 28,
+    letterSpacing: 8,
+    fontFamily: typography.display,
+    color: colors.accent,
+  },
 });

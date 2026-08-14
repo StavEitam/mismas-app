@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import Animated, { BounceIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
 import { Screen } from '../components/Screen';
 import { Avatar } from '../components/Avatar';
 import { useAuthUser } from '../hooks/useAuthUser';
@@ -10,6 +11,7 @@ import {
   getUser,
   type Event,
 } from '../lib/firestore';
+import { colors, spacing, typography } from '../theme';
 
 type Attendee = {
   userId: string;
@@ -60,7 +62,7 @@ export default function RevealScreen() {
   if (authLoading || step === 'loading') {
     return (
       <Screen>
-        <ActivityIndicator color="#f2308c" />
+        <ActivityIndicator color={colors.brand} />
       </Screen>
     );
   }
@@ -87,21 +89,28 @@ export default function RevealScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Who was there tonight 🎉</Text>
-      <Text style={styles.subtitle}>{attendees.length} people checked in</Text>
+      <Animated.Text entering={BounceIn.duration(700)} style={styles.title}>
+        Who was there tonight 🎉
+      </Animated.Text>
+      <Animated.Text entering={FadeInDown.delay(150)} style={styles.subtitle}>
+        {attendees.length} {attendees.length === 1 ? 'person' : 'people'} checked in
+      </Animated.Text>
       <FlatList
         data={attendees}
         keyExtractor={(item) => item.userId}
         numColumns={3}
         columnWrapperStyle={styles.row}
         scrollEnabled={false}
-        renderItem={({ item }) => (
-          <View style={styles.attendee}>
+        renderItem={({ item, index }) => (
+          <Animated.View
+            entering={ZoomIn.delay(250 + index * 80).springify().damping(11).stiffness(140)}
+            style={styles.attendee}
+          >
             <Avatar displayName={item.displayName} photoUrl={item.photoUrl} size={72} />
             <Text style={styles.name} numberOfLines={1}>
               {item.displayName}
             </Text>
-          </View>
+          </Animated.View>
         )}
       />
     </Screen>
@@ -109,9 +118,9 @@ export default function RevealScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '800', color: '#fff' },
-  subtitle: { fontSize: 14, color: '#c9b8e0', marginBottom: 8 },
-  row: { justifyContent: 'space-between', marginBottom: 16 },
-  attendee: { alignItems: 'center', width: '30%', gap: 6 },
-  name: { color: '#e6dcf2', fontSize: 12 },
+  title: { fontSize: 26, fontFamily: typography.display, color: colors.textPrimary },
+  subtitle: { fontSize: 14, fontFamily: typography.bodyRegular, color: colors.textSecondary, marginBottom: spacing.xs },
+  row: { justifyContent: 'space-between', marginBottom: spacing.md },
+  attendee: { alignItems: 'center', width: '30%', gap: spacing.xs + 2 },
+  name: { color: colors.textSecondary, fontSize: 12, fontFamily: typography.bodyRegular },
 });

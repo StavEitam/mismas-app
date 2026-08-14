@@ -13,6 +13,7 @@ import {
   type EventWithId,
   type TicketWithId,
 } from '../lib/firestore';
+import { colors, spacing, typography } from '../theme';
 
 export default function EventScreen() {
   const { user, loading: authLoading } = useAuthUser();
@@ -34,7 +35,7 @@ export default function EventScreen() {
         setTicket(myTicket);
       }
     } catch {
-      setError('Could not load the event right now — pull to refresh in a bit.');
+      setError('Could not load the event right now, pull to refresh in a bit.');
     } finally {
       setDataLoading(false);
     }
@@ -70,7 +71,7 @@ export default function EventScreen() {
         checkedInAt: null,
       });
     } catch {
-      setError("Couldn't reserve your spot — give it another try.");
+      setError("Couldn't reserve your spot, give it another try.");
     } finally {
       setPurchasing(false);
     }
@@ -79,7 +80,7 @@ export default function EventScreen() {
   if (authLoading || dataLoading) {
     return (
       <Screen>
-        <ActivityIndicator color="#f2308c" />
+        <ActivityIndicator color={colors.brand} />
       </Screen>
     );
   }
@@ -88,7 +89,7 @@ export default function EventScreen() {
     return (
       <Screen>
         <Text style={styles.title}>Nothing on the calendar yet</Text>
-        <Text style={styles.subtitle}>Check back soon — MISMAS nights get announced here first.</Text>
+        <Text style={styles.subtitle}>Check back soon, MISMAS nights get announced here first.</Text>
       </Screen>
     );
   }
@@ -102,7 +103,7 @@ export default function EventScreen() {
           {event.venue} · {formatDate(event.date)}
         </Text>
         <Text style={styles.ticketNote}>
-          Your spot wasn't confirmed — reach out to MISMAS directly if you think this is a
+          Your spot wasn't confirmed. Reach out to MISMAS directly if you think this is a
           mistake or need help sorting out payment.
         </Text>
       </Screen>
@@ -119,9 +120,9 @@ export default function EventScreen() {
         </Text>
         <Text style={styles.ticketNote}>
           Send payment to <Text style={styles.paymentPhone}>{event.paymentPhone}</Text> via
-          Bit or PayBox — add{' '}
+          Bit or PayBox, and add{' '}
           <Text style={styles.paymentPhone}>{ticketReferenceCode(ticket.id)}</Text> in the
-          payment note so we can match it to your spot. We'll confirm once it's received.
+          payment note so we can match it to your spot. We'll confirm once it's in.
         </Text>
       </Screen>
     );
@@ -136,7 +137,7 @@ export default function EventScreen() {
           {event.venue} · {formatDate(event.date)}
         </Text>
         <Text style={styles.ticketNote}>
-          Hold tight — your check-in PIN will be on a sign at the door the night of.
+          Hold tight, your check-in PIN will be on a sign at the door the night of.
         </Text>
         <PrimaryButton label="I'm at the door" onPress={() => router.push('/check-in')} />
       </Screen>
@@ -165,8 +166,8 @@ export default function EventScreen() {
         loading={purchasing}
       />
       <Text style={styles.paymentNote}>
-        Payment is coordinated directly with MISMAS (Bit/PayBox) — reserving sends your spot
-        for approval.
+        Payment happens directly with MISMAS (Bit/PayBox). Reserving sends your spot for
+        approval.
       </Text>
     </Screen>
   );
@@ -185,11 +186,11 @@ function formatDate(value: unknown): string {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 26, fontWeight: '800', color: '#fff' },
-  eventName: { fontSize: 20, fontWeight: '700', color: '#fff' },
-  subtitle: { fontSize: 14, color: '#c9b8e0' },
-  ticketNote: { fontSize: 14, color: '#e6dcf2', marginTop: 8 },
-  paymentPhone: { fontWeight: '700', color: '#fff' },
-  paymentNote: { fontSize: 12, color: '#8a7aa3', textAlign: 'center' },
-  error: { color: '#ff8ba7', fontSize: 13 },
+  title: { fontSize: 26, fontFamily: typography.display, color: colors.textPrimary },
+  eventName: { fontSize: 20, fontFamily: typography.heading, color: colors.textPrimary },
+  subtitle: { fontSize: 14, fontFamily: typography.bodyRegular, color: colors.textSecondary },
+  ticketNote: { fontSize: 14, fontFamily: typography.bodyRegular, color: colors.textPrimary, marginTop: spacing.xs },
+  paymentPhone: { fontFamily: typography.heading, color: colors.accent },
+  paymentNote: { fontSize: 12, fontFamily: typography.bodyRegular, color: colors.textSecondary, textAlign: 'center' },
+  error: { color: colors.error, fontSize: 13, fontFamily: typography.bodyRegular },
 });

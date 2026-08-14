@@ -1,4 +1,5 @@
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { colors, radius, spacing, typography } from '../theme';
 
 type TextFieldProps = TextInputProps & {
   label: string;
@@ -9,7 +10,7 @@ export function TextField({ label, style, ...inputProps }: TextFieldProps) {
     <View style={styles.wrapper}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        placeholderTextColor="#8a7aa3"
+        placeholderTextColor={colors.textSecondary}
         style={[styles.input, style]}
         {...inputProps}
       />
@@ -18,16 +19,17 @@ export function TextField({ label, style, ...inputProps }: TextFieldProps) {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { gap: 6 },
-  label: { color: '#c9b8e0', fontSize: 13, fontWeight: '600' },
+  wrapper: { gap: spacing.xs + 2 },
+  label: { color: colors.textSecondary, fontSize: 13, fontFamily: typography.heading },
   input: {
-    backgroundColor: '#1e0f33',
-    color: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: colors.surface,
+    color: colors.textPrimary,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md - 2,
+    paddingVertical: spacing.md - 4,
     fontSize: 16,
+    fontFamily: typography.bodyRegular,
     borderWidth: 1,
-    borderColor: '#3a2657',
+    borderColor: colors.border,
   },
 });
