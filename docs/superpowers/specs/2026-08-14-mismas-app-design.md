@@ -45,7 +45,7 @@ No selfie/photo capture step exists in this MVP (see Section 7) — the app stay
 
 **There is still no separate admin web app in this MVP** — but two things that were originally console-only moved into a single admin-gated screen inside the same guest app, because they turned out to be needed too often to stay comfortably manual: **event management** and **ticket approval**. Everything else stays console-only, at 100-200 users per event:
 
-- **Moderation:** Flip a `status` field on a `users` doc to `suspended`/`banned` directly in the console.
+- **Moderation:** Flip a `status` field on a `users` doc to `suspended`/`banned` directly in the console. This is enforced server-side, not cosmetic: the Firestore rules check the requester's own `status == 'active'` before allowing a ticket reservation *or* a check-in, so a suspended/banned account is genuinely blocked from both, even mid-flow (e.g. suspended after already reserving, before the event).
 - **Odd-number groupings / no-shows:** Resolved by whoever's running the door that night, editing ticket records directly if needed — no automated re-pairing logic to build or maintain.
 
 **In-app Admin screen** (visible only to the account(s) with `users.isAdmin == true`, which can only ever be set manually in the console — no self-elevation path exists):

@@ -27,6 +27,15 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
+    // True unless the requester has been suspended/banned (console-only
+    // moderation flag, spec Section 4). Enforces that moderation actually
+    // has teeth: a non-active user can neither reserve a new ticket nor
+    // check in on an existing one.
+    function isActiveUser() {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active';
+    }
+
     // users/{userId} — a user can read/write only their own doc.
     // `status` (moderation flag) and `isAdmin` can never be changed by the
     // client — only via the Firebase console/Admin SDK.
@@ -63,22 +72,26 @@ service cloud.firestore {
     // list). Any *other* guest's ticket becomes readable only once it's
     // checked-in AND the event has been revealed (powers the Reveal
     // screen). A user can create only their own ticket, starting as
-    // approvalStatus 'pending'. From there, the guest can only ever flip
+    // approvalStatus 'pending' — and only while they're an active (not
+    // suspended/banned) account. From there, the guest can only ever flip
     // checkedIn/checkedInAt on it (PIN check-in), and only once an admin
-    // has set approvalStatus to 'approved'; only an admin can change
-    // approvalStatus itself. purchaseStatus, userId, eventId,
-    // consentAccepted are immutable from the client once created. No
-    // selfie feature in this MVP — Reveal uses only users.photoUrl or the
-    // branded fallback avatar.
+    // has set approvalStatus to 'approved' AND the guest is still active
+    // (a user suspended after reserving can no longer check in); only an
+    // admin can change approvalStatus itself. purchaseStatus, userId,
+    // eventId, consentAccepted are immutable from the client once created.
+    // No selfie feature in this MVP — Reveal uses only users.photoUrl or
+    // the branded fallback avatar.
     match /tickets/{ticketId} {
       allow read: if isOwner(resource.data.userId)
         || isAdmin()
         || (resource.data.checkedIn == true && eventRevealed(resource.data.eventId));
       allow create: if isOwner(request.resource.data.userId)
+        && isActiveUser()
         && request.resource.data.checkedIn == false
         && request.resource.data.approvalStatus == 'pending';
       allow update: if
         (isOwner(resource.data.userId)
+          && isActiveUser()
           && onlyChanges(['checkedIn', 'checkedInAt'])
           && resource.data.approvalStatus == 'approved')
         || (isAdmin() && onlyChanges(['approvalStatus']));
