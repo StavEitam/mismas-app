@@ -1,7 +1,18 @@
+import { ActivityIndicator } from 'react-native';
 import { Redirect } from 'expo-router';
+import { Screen } from '../components/Screen';
+import { useAuthUser } from '../hooks/useAuthUser';
 
-// Landing route. Real logic (route to Register vs Event based on auth state)
-// arrives in Phase 3; for now this just proves the navigation shell works.
 export default function Index() {
-  return <Redirect href="/register" />;
+  const { user, loading } = useAuthUser();
+
+  if (loading) {
+    return (
+      <Screen>
+        <ActivityIndicator color="#f2308c" />
+      </Screen>
+    );
+  }
+
+  return <Redirect href={user ? '/event' : '/register'} />;
 }

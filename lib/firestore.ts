@@ -4,8 +4,10 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore';
@@ -51,6 +53,20 @@ export type Ticket = {
 
 export type TicketWithId = Ticket & { id: string };
 
+export async function createUserProfile(
+  uid: string,
+  displayName: string,
+  authMethod: AuthMethod
+): Promise<void> {
+  await setDoc(doc(db, 'users', uid), {
+    displayName,
+    photoUrl: null,
+    authMethod,
+    status: 'active',
+    createdAt: serverTimestamp(),
+  } satisfies User);
+}
+
 export async function getUser(uid: string): Promise<User | null> {
   const snap = await getDoc(doc(db, 'users', uid));
   return snap.exists() ? (snap.data() as User) : null;
@@ -59,6 +75,17 @@ export async function getUser(uid: string): Promise<User | null> {
 export async function getEvent(eventId: string): Promise<Event | null> {
   const snap = await getDoc(doc(db, 'events', eventId));
   return snap.exists() ? (snap.data() as Event) : null;
+}
+
+export type EventWithId = Event & { id: string };
+
+/** The single current/next event guests see. MVP assumes one active event at a time. */
+export async function getUpcomingEvent(): Promise<EventWithId | null> {
+  const q = query(collection(db, 'events'), where('status', '==', 'upcoming'), limit(1));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  const first = snap.docs[0];
+  return { id: first.id, ...(first.data() as Event) };
 }
 
 export async function getMyTicketForEvent(
