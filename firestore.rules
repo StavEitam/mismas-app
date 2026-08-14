@@ -1,10 +1,72 @@
 rules_version = '2';
 
-// Phase 1 baseline: everything locked down by default.
-// Phase 2 replaces this with per-collection rules for users/events/tickets
-// per docs/superpowers/specs/2026-08-14-mismas-app-design.md Section 6.
+// Per-collection rules for the MISMAS MVP schema.
+// See docs/superpowers/specs/2026-08-14-mismas-app-design.md Section 6.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // True if the update only touches fields in `allowedFields`.
+    function onlyChanges(allowedFields) {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(allowedFields);
+    }
+
+    // users/{userId} — a user can read/write only their own doc.
+    // `status` (moderation flag) can never be changed by the client — only
+    // via the Firebase console/Admin SDK, per the Manual Admin Console
+    // principle (spec Section 4).
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.status == 'active';
+      allow update: if isOwner(userId)
+        && request.resource.data.status == resource.data.status;
+      allow delete: if false;
+    }
+
+    // events/{eventId} — readable by any signed-in guest, never writable by
+    // the client. Event creation, revealPin/revealed flips, etc. are done by
+    // the console/Admin SDK, per the Manual Admin Console principle.
+    match /events/{eventId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // True only once the event's host has manually flipped `revealed`, per
+    // the manual-only reveal trigger (spec Section 4). Used to let the
+    // Reveal screen read *other* guests' checked-in tickets.
+    function eventRevealed(eventId) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/events/$(eventId)).data.revealed == true;
+    }
+
+    // tickets/{ticketId} — a user always has full read access to their own
+    // tickets. Any *other* user's ticket becomes readable only once it's
+    // checked-in AND the event has been revealed (this is what powers the
+    // Reveal screen's "who else was there" query). A user can create only
+    // their own ticket, and can only ever update
+    // checkedIn/checkedInAt/selfieUrl on it — purchaseStatus, userId,
+    // eventId, consentAccepted are immutable from the client once created
+    // (refunds/etc. are console-only).
+    match /tickets/{ticketId} {
+      allow read: if isOwner(resource.data.userId)
+        || (resource.data.checkedIn == true && eventRevealed(resource.data.eventId));
+      allow create: if isOwner(request.resource.data.userId)
+        && request.resource.data.checkedIn == false;
+      allow update: if isOwner(resource.data.userId)
+        && onlyChanges(['checkedIn', 'checkedInAt', 'selfieUrl']);
+      allow delete: if false;
+    }
+
+    // Everything else stays locked down.
     match /{document=**} {
       allow read, write: if false;
     }
